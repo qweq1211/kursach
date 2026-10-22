@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Калькулятор стоимости курсовых, дипломов, рефератов, отчётов по практике и других студенческих работ.">
+<title>Сколько стоит моя работа? — Курсовые | Помощь с учёбой</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;800;900&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Макет: одна колонка-«бланк заказа» слева, справа липкий чек с итогом; на телефоне чек уезжает вниз, итог — в нижней плашке.
+   Фирменный стиль страницы ВК: почти чёрный фон, тёплый свет лампы, красный акцент. Тема одна, тёмная — по выбору. */
+:root {
+  color-scheme: dark;
+  --bg: #0e0d0f;
+  --bg-glow: #2a1d14;
+  --panel: #18161a;
+  --panel-2: #221f24;
+  --line: #34303a;
+  --fg: #f4f1ee;
+  --muted: #a7a1aa;
+  --accent: #e21e2c;
+  --accent-soft: #3a1418;
+  --ok: #3fbf7a;
+  --display: "Inter Tight", "Inter", "Segoe UI", system-ui, sans-serif;
+  --body: "Inter", "Segoe UI", system-ui, sans-serif;
+  --r: 16px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: radial-gradient(120% 70% at 85% -10%, var(--bg-glow) 0%, var(--bg) 60%) fixed, var(--bg);
+  color: var(--fg);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.5;
+}
+.wrap {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding-block: 28px 120px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+header { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
+.logo {
+  width: 52px; height: 52px; border-radius: 12px; background: var(--accent);
+  display: grid; place-items: center; font-family: var(--display); font-weight: 900; font-size: 24px; color: #fff; flex: none;
+}
+.brand { font-weight: 700; }
+.brand small { display: block; color: var(--muted); font-weight: 500; font-size: 13px; }
+h1 {
+  font-family: var(--display); font-weight: 900; font-size: clamp(34px, 6vw, 56px); line-height: 1.02;
+  margin: 0 0 10px; letter-spacing: -0.01em; text-wrap: balance;
+}
+h1 mark { background: var(--accent); color: #fff; padding: 0 .18em; }
+.lead { color: var(--muted); max-width: 60ch; margin: 0 0 28px; }
+
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 24px; align-items: start; }
+@media (max-width: 860px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+
+.form { display: grid; gap: 14px; min-width: 0; }
+fieldset {
+  border: 1px solid var(--line); border-radius: var(--r); background: var(--panel);
+  margin: 0; padding: 18px; min-width: 0;
+}
+legend {
+  float: left; width: 100%; padding: 0; margin-bottom: 12px;
+  font-family: var(--display); font-weight: 800; font-size: 19px;
+  display: flex; align-items: baseline; gap: 10px;
+}
+legend .n { color: var(--accent); font-size: 14px; letter-spacing: .08em; }
+legend + * { clear: both; }
+.hint { color: var(--muted); font-size: 13px; margin: 8px 0 0; }
+
+.chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
+.search { position: relative; margin-bottom: 12px; }
+.search input {
+  width: 100%; height: 52px; border-radius: 14px; border: 1px solid var(--line); background: var(--panel-2); color: var(--fg);
+  padding: 0 16px 0 46px; font: 500 16px var(--body);
+}
+.search input::placeholder { color: var(--muted); }
+.search input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.search svg { position: absolute; left: 16px; top: 16px; width: 20px; height: 20px; stroke: var(--muted); fill: none; stroke-width: 2; }
+.browse { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+@media (max-width: 720px) { .browse { grid-template-columns: minmax(0, 1fr); } }
+.pills { display: grid; gap: 6px; }
+.pill {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; text-align: left;
+  border: 1px solid var(--line); background: var(--panel-2); color: var(--fg); border-radius: 12px;
+  padding: 12px 14px; font: 600 15px var(--body); cursor: pointer;
+}
+.pill .cnt { color: var(--muted); font-weight: 500; font-size: 13px; font-variant-numeric: tabular-nums; }
+.pill[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.pill[aria-pressed="true"] .cnt { color: rgba(255,255,255,.8); }
+.pill .arr { transition: transform .2s; display: inline-block; margin-left: 8px; }
+.pill[aria-pressed="true"] .arr { transform: rotate(180deg); }
+.panel { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; padding: 4px 0 10px; }
+.panel[hidden] { display: none !important; }
+.panel .card label { min-height: 0; }
+.pill:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.card { position: relative; }
+.card input { position: absolute; opacity: 0; inset: 0; }
+.card label {
+  display: flex; flex-direction: column; gap: 6px; height: 100%; min-height: 150px;
+  padding: 16px; border-radius: 16px; border: 1px solid var(--line); background: var(--panel-2); cursor: pointer;
+  transition: border-color .15s, transform .15s, box-shadow .15s;
+}
+.card label:hover { border-color: #57505c; transform: translateY(-2px); }
+.card .cat { text-transform: uppercase; letter-spacing: .08em; font-size: 11px; color: var(--muted); }
+.card .nm { font-family: var(--display); font-weight: 800; font-size: 18px; line-height: 1.15; }
+.card .ds { color: var(--muted); font-size: 13px; flex: 1; }
+.card .pr { font-family: var(--display); font-weight: 900; font-size: 22px; font-variant-numeric: tabular-nums; }
+.card input:checked + label { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; background: var(--accent-soft); }
+.card input:checked + label .pr { color: #fff; }
+.card input:focus-visible + label { outline: 2px solid var(--fg); outline-offset: 2px; }
+.empty { color: var(--muted); padding: 18px 4px; }
+.opt { position: relative; }
+.opt input { position: absolute; opacity: 0; inset: 0; }
+.opt label {
+  display: flex; flex-direction: column; gap: 2px; height: 100%;
+  padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel-2);
+  cursor: pointer; transition: border-color .15s, background .15s;
+}
+.opt label b { font-weight: 600; }
+.opt label span { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+.opt input:checked + label { border-color: var(--accent); background: var(--accent-soft); }
+.opt input:focus-visible + label { outline: 2px solid var(--fg); outline-offset: 2px; }
+
+.seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.seg.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 520px) { .seg { grid-template-columns: minmax(0, 1fr); } }
+
+.range-row { display: flex; align-items: center; gap: 14px; }
+input[type=range] { flex: 1; accent-color: var(--accent); min-width: 0; }
+.pages { font-family: var(--display); font-weight: 800; font-size: 26px; min-width: 4.5ch; text-align: right; font-variant-numeric: tabular-nums; }
+
+.toggle { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+.toggle input { width: 22px; height: 22px; accent-color: var(--accent); flex: none; }
+
+.stepper { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin-top: 12px; }
+.stepper button {
+  width: 44px; height: 44px; background: var(--panel-2); color: var(--fg); border: 0; font-size: 22px; cursor: pointer;
+}
+.stepper button:focus-visible { outline: 2px solid var(--fg); outline-offset: -2px; }
+.stepper output { min-width: 3ch; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+.friends[hidden] { display: none !important; }
+
+
+.info { border: 1px solid var(--accent); background: linear-gradient(180deg, var(--accent-soft), var(--panel)); border-radius: var(--r); padding: 18px; min-width: 0; }
+.info h3 { margin: 0 0 10px; font-family: var(--display); font-weight: 800; font-size: 19px; }
+.info h3 span { color: var(--muted); font-weight: 600; font-size: 14px; display: block; font-family: var(--body); margin-top: 2px; }
+.info ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.info li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 8px; align-items: start; }
+.info li::before { content: "✓"; color: var(--ok); font-weight: 700; line-height: 1.5; }
+/* чек */
+.receipt {
+  position: sticky; top: calc(16px + env(safe-area-inset-top, 0px));
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; min-width: 0;
+}
+.receipt .top { padding: 18px 18px 6px; }
+.receipt .label { text-transform: uppercase; letter-spacing: .1em; font-size: 12px; color: var(--muted); }
+.total { font-family: var(--display); font-weight: 900; font-size: 48px; line-height: 1.05; font-variant-numeric: tabular-nums; margin: 4px 0 2px; }
+.total small { font-size: 22px; font-weight: 800; color: var(--muted); margin-right: 6px; }
+.lines { list-style: none; margin: 0; padding: 8px 18px 14px; display: grid; gap: 6px; font-size: 14px; }
+.lines li { display: flex; justify-content: space-between; gap: 12px; font-variant-numeric: tabular-nums; }
+.lines li span:first-child { color: var(--muted); min-width: 0; }
+.lines li.minus span:last-child { color: var(--ok); }
+.lines li.plus span:last-child { color: #ff8a92; }
+.perf { border-top: 2px dashed var(--line); margin: 0 18px; }
+.actions { padding: 16px 18px 18px; display: grid; gap: 10px; }
+.btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; border-radius: 12px;
+  font: 700 16px var(--body); text-decoration: none; cursor: pointer; border: 0;
+}
+.btn.primary { background: var(--accent); color: #fff; }
+.btn.ghost { background: transparent; color: var(--fg); border: 1px solid var(--line); }
+.btn:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+.note { color: var(--muted); font-size: 12.5px; padding: 0 18px 18px; margin: 0; }
+.copied { color: var(--ok); font-size: 13px; text-align: center; min-height: 1.2em; margin: 0; }
+textarea.fallback { width: 100%; min-height: 110px; background: var(--panel-2); color: var(--fg); border: 1px solid var(--line); border-radius: 10px; padding: 10px; font: 13px var(--body); }
+
+/* нижняя плашка на телефоне */
+.bar {
+  display: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
+  background: rgba(14, 13, 15, .94); border-top: 1px solid var(--line); backdrop-filter: blur(8px);
+  padding-top: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  align-items: center; justify-content: space-between; gap: 12px;
+}
+.bar .t { font-family: var(--display); font-weight: 900; font-size: 26px; font-variant-numeric: tabular-nums; }
+.bar .btn { min-height: 46px; padding: 0 18px; }
+@media (max-width: 860px) { .bar { display: flex; } .receipt { position: static; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo" aria-hidden="true">5+</div>
+    <div class="brand">Курсовые | Помощь с учёбой<small>vk.ru/kursach_HEEIP</small></div>
+  </header>
+
+  <h1>Сколько стоит <mark>моя работа?</mark></h1>
+  <p class="lead">Выберите тип работы, объём, срок и нужную оригинальность — калькулятор сразу покажет ориентировочную цену. Точную сумму назову в личных сообщениях, когда увижу тему и требования.</p>
+
+  <div class="grid">
+    <form class="form" id="calc" novalidate>
+      <fieldset>
+        <legend><span class="n">01</span>Тип работы</legend>
+        <div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+          <input type="search" id="q" placeholder="Найти: реферат, диплом, отчёт…" aria-label="Поиск по видам работ" autocomplete="off"></div>
+        <div class="browse">
+          <div class="pills" id="groups" aria-label="Категории"></div>
+          <div class="cards" id="types" hidden></div>
+        </div>
+      </fieldset>
+
+      <fieldset id="volBox">
+        <legend><span class="n">02</span>Объём</legend>
+        <div class="range-row">
+          <input type="range" id="pages" min="20" max="80" step="1" value="40" aria-label="Количество листов">
+          <div class="pages"><span id="pagesOut">40</span></div>
+        </div>
+        <p class="hint" id="volHint">До 40 листов — в базовой цене, каждый лист сверху +150 ₽.</p>
+      </fieldset>
+
+
+      <section class="info" id="info" aria-live="polite">
+        <h3 id="infoTitle">Что входит</h3>
+        <ul id="infoList"></ul>
+      </section>
+      <fieldset>
+        <legend><span class="n" id="nOrig">03</span>Оригинальность</legend>
+        <div class="seg" id="orig">
+          <div class="opt"><input type="radio" name="orig" id="o1" value="0" checked><label for="o1"><b>до 70%</b><span>без надбавки</span></label></div>
+          <div class="opt"><input type="radio" name="orig" id="o2" value="0.15"><label for="o2"><b>70–85%</b><span>+15%</span></label></div>
+          <div class="opt"><input type="radio" name="orig" id="o3" value="0.3"><label for="o3"><b>от 85%</b><span>+30%</span></label></div>
+        </div>
+        <p class="hint">Требование обычно указано в методичке вуза.</p>
+      </fieldset>
+
+      <fieldset>
+        <legend><span class="n" id="nTerm">04</span>Срок</legend>
+        <div class="seg two">
+          <div class="opt"><input type="radio" name="term" id="t1" value="0" checked><label for="t1"><b>Обычный</b><span>3 дня и больше</span></label></div>
+          <div class="opt"><input type="radio" name="term" id="t2" value="0.3"><label for="t2"><b>Срочно</b><span>меньше 3 дней · +30%</span></label></div>
+        </div>
+      </fieldset>
+
+      <fieldset id="speechBox">
+        <legend><span class="n" id="nSpeech">05</span>К защите</legend>
+        <label class="toggle" id="speechToggle"><input type="checkbox" id="speech"><span>Текст выступления <b>+1 500 ₽</b></span></label>
+        <p class="hint" id="speechHint">К диплому презентация и текст выступления уже входят.</p>
+      </fieldset>
+
+      <fieldset>
+        <legend><span class="n" id="nWho">06</span>Скидка</legend>
+        <div class="seg two">
+          <div class="opt"><input type="radio" name="who" id="w1" value="first" checked><label for="w1"><b>Заказываю впервые</b><span>−10%</span></label></div>
+          <div class="opt"><input type="radio" name="who" id="w2" value="back"><label for="w2"><b>Уже заказывал(а)</b><span>−650 ₽ за каждого друга</span></label></div>
+        </div>
+        <div class="friends" id="friendsBox" hidden>
+          <div class="stepper" role="group" aria-label="Сколько друзей пришло по вашей рекомендации">
+            <button type="button" id="fMinus" aria-label="Меньше">−</button>
+            <output id="fOut">0</output>
+            <button type="button" id="fPlus" aria-label="Больше">+</button>
+          </div>
+          <p class="hint">Сколько друзей заказали работу по вашей рекомендации.</p>
+        </div>
+      </fieldset>
+    </form>
+
+    <aside class="receipt" aria-live="polite">
+      <div class="top">
+        <div class="label">Ориентировочно</div>
+        <div class="total" id="total"><small>от</small>6 300 ₽</div>
+      </div>
+      <ul class="lines" id="lines"></ul>
+      <div class="perf"></div>
+      <div class="actions">
+        <button class="btn primary" type="button" id="copyBtn">Скопировать расчёт</button>
+        <a class="btn ghost" id="vkLink" href="https://vk.ru/kursach_HEEIP" target="_blank" rel="noopener">Написать в ВК →</a>
+        <p class="copied" id="copied"></p>
+        <textarea class="fallback" id="fallback" hidden readonly aria-label="Текст расчёта"></textarea>
+      </div>
+      <p class="note">Скопируйте расчёт и вставьте в сообщение вместе с темой. Цена зависит от темы и требований вуза и подтверждается в личных сообщениях.</p>
+    </aside>
+  </div>
+</div>
+
+<div class="bar" aria-hidden="true">
+  <div><div class="label" style="font-size:11px;color:var(--muted);letter-spacing:.1em">ОРИЕНТИРОВОЧНО</div><div class="t" id="barTotal">от 6 300 ₽</div></div>
+  <a class="btn primary" href="https://vk.ru/kursach_HEEIP" target="_blank" rel="noopener">Написать</a>
+</div>
+
+<script>
+(function () {
+  var TYPES = [
+    { id: "kurs", name: "Курсовая", base: 7000, note: "до 40 листов", norm: 40, min: 20, max: 80, speech: true },
+    { id: "dipl", name: "Диплом (ВКР)", base: 24000, note: "презентация и речь включены" },
+    { id: "stat", name: "Научная статья", base: 3500, note: "до 12 листов", norm: 12, min: 5, max: 30 },
+    { id: "pres", name: "Презентация", base: 4500, note: "к вашей работе" },
+    { id: "otch", name: "Отчёт по практике", base: 4000, note: "" },
+    { id: "esse", name: "Эссе", base: 3500, note: "" },
+    { id: "spo", name: "Диплом колледжа (СПО)", base: 14000, note: "" },
+    { id: "ref", name: "Реферат", base: 2000, note: "" },
+    { id: "kontr", name: "Контрольная работа", base: 1500, note: "" },
+    { id: "dokl", name: "Доклад", base: 1000, note: "" },
+    { id: "ann", name: "Аннотация / автореферат", base: 800, note: "" },
+    { id: "rec", name: "Рецензия / отзыв", base: 800, note: "" },
+    { id: "dnev", name: "Дневник практики", base: 1000, note: "" },
+    { id: "komp", name: "Комплект по практике", base: 5000, note: "отчёт + дневник" },
+    { id: "vz", name: "Введение и заключение", base: 1200, note: "" },
+    { id: "glk", name: "Глава курсовой", base: 3000, note: "одна глава" },
+    { id: "gld", name: "Глава диплома", base: 7000, note: "одна глава" },
+    { id: "plan", name: "План + подбор литературы", base: 700, note: "" },
+    { id: "uniq", name: "Повышение оригинальности", base: 0, note: "от 50 ₽ за лист", perPage: true, min: 1, max: 100, def: 20 }
+  ];
+  var RATE = { "0": 50, "0.15": 80, "0.3": 120 }, MIN_UNIQ = 500;
+
+  var DESC = {
+    kurs: ["Подбор литературы и план по методичке вашего вуза", "Теоретическая и практическая главы", "Введение с целью и задачами, заключение с выводами", "Список литературы и оформление по ГОСТу", "Доработка по замечаниям преподавателя"],
+    dipl: ["Структура работы и согласование плана", "Теоретическая, аналитическая и практическая главы", "Введение, заключение, список литературы, приложения", "Оформление по методичке вуза", "Презентация и текст выступления для защиты", "Доработка по замечаниям научного руководителя"],
+    stat: ["УДК, аннотация и ключевые слова", "Текст по структуре научной статьи", "Список литературы и ссылки в тексте", "Оформление под требования журнала или сборника"],
+    pres: ["Слайды по структуре вашей работы, обычно 10–15", "Единый аккуратный стиль", "Схемы, таблицы и графики вместо сплошного текста", "Файл PowerPoint, готовый к показу"],
+    otch: ["По программе практики и методичке", "Описание организации — базы практики", "Выполненные задания и их результаты", "Выводы и приложения, если нужны"],
+    esse: ["Тема раскрыта с собственной позицией автора", "Аргументы и примеры", "Чёткий вывод", "Объём — по требованию преподавателя"],
+    spo: ["Теоретическая и практическая части", "Введение, заключение, список литературы", "Оформление по требованиям колледжа", "Доработка по замечаниям руководителя"],
+    ref: ["Подбор источников по теме", "Раскрытие темы по плану", "Введение, заключение, список литературы", "Оформление по ГОСТу"],
+    kontr: ["Ответы на вопросы или решение заданий по вашему варианту", "Оформление по требованиям преподавателя"],
+    dokl: ["Текст для выступления на 5–7 минут", "Простой язык — удобно читать вслух", "Презентацию к докладу можно заказать отдельно"],
+    ann: ["Краткое содержание работы по требованиям", "Цель, методы, результаты и выводы"],
+    rec: ["Оценка актуальности и структуры работы", "Достоинства и замечания", "По форме вашего вуза"],
+    dnev: ["Записи по дням или неделям практики", "В соответствии с программой практики", "По форме вашего вуза"],
+    komp: ["Отчёт по практике и дневник практики", "Документы согласованы между собой", "Дешевле, чем заказывать по отдельности"],
+    vz: ["Актуальность, цель и задачи, объект и предмет, методы", "Выводы по каждой задаче в заключении", "Под содержание вашей готовой работы"],
+    glk: ["Одна глава курсовой по вашему плану", "Ссылки на источники в тексте", "Выводы по главе"],
+    gld: ["Одна глава дипломной работы по вашему плану", "Ссылки на источники в тексте", "Выводы по главе"],
+    plan: ["Структура работы: главы и параграфы", "Подбор актуальных источников по теме", "Основа для согласования с научным руководителем"],
+    uniq: ["Переработка текста своими словами с сохранением смысла", "Корректное оформление цитат и определений", "Честный рерайт — без замены букв и других трюков, которые ловит проверка", "Повторная проверка после доработки"]
+  };
+  var PER_PAGE = 150, FRIEND = 650;
+  var state = { type: "kurs", pages: 40, friends: 0 };
+  var $ = function (id) { return document.getElementById(id); };
+  var fmt = function (n) { return n.toLocaleString("ru-RU").replace(/ /g, " ") + " ₽"; };
+
+  var GROUPS = [
+    { name: "Курсовые и дипломы", ids: ["kurs", "dipl", "spo"] },
+    { name: "Небольшие работы", ids: ["ref", "esse", "kontr", "dokl", "stat"] },
+    { name: "Практика", ids: ["otch", "dnev", "komp"] },
+    { name: "Части работы", ids: ["vz", "glk", "gld", "plan"] },
+    { name: "Доработка и защита", ids: ["uniq", "pres", "ann", "rec"] }
+  ];
+  var byId = {}; TYPES.forEach(function (t) { byId[t.id] = t; });
+  var curGroup = 0;
+  var curCat = 0, query = "";
+  function groupOf(id) { for (var i = 0; i < GROUPS.length; i++) if (GROUPS[i].ids.indexOf(id) >= 0) return i; return 0; }
+  function card(t) {
+    var price = t.perPage ? "от 50 ₽/лист" : fmt(t.base);
+    var d = document.createElement("div"); d.className = "card";
+    d.innerHTML = '<input type="radio" name="type" id="ty_' + t.id + '" value="' + t.id + '"' + (t.id === state.type ? " checked" : "") + '>' +
+      '<label for="ty_' + t.id + '"><span class="nm">' + t.name + '</span>' +
+      '<span class="ds">' + ((DESC[t.id] || [""])[0]) + '</span><span class="pr">' + price + '</span></label>';
+    return d;
+  }
+  function match(t) { return !query || (t.name + " " + (DESC[t.id] || []).join(" ")).toLowerCase().indexOf(query) >= 0; }
+  function drawGroup() {
+    var root = $("groups"); root.innerHTML = "";
+    var anyShown = false;
+    var all = document.createElement("button"); all.type = "button"; all.className = "pill";
+    all.innerHTML = '<span>Все</span><span class="cnt">' + TYPES.length + '<span class="arr">▾</span></span>';
+    all.setAttribute("aria-pressed", curCat === -1 ? "true" : "false");
+    all.addEventListener("click", function () { curCat = curCat === -1 ? -2 : -1; drawGroup(); });
+    root.appendChild(all);
+    GROUPS.forEach(function (g, i) {
+      var items = g.ids.map(function (id) { return byId[id]; }).filter(match);
+      if (query && !items.length) return;
+      var open = curCat === -1 || curCat === i || (!!query);
+      var b = document.createElement("button"); b.type = "button"; b.className = "pill";
+      b.innerHTML = '<span>' + g.name + '</span><span class="cnt">' + items.length + '<span class="arr">▾</span></span>';
+      b.setAttribute("aria-pressed", open ? "true" : "false"); b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.addEventListener("click", function () { curCat = curCat === i ? -2 : i; drawGroup(); });
+      root.appendChild(b);
+      var p = document.createElement("div"); p.className = "panel"; p.hidden = !open;
+      items.forEach(function (t) { p.appendChild(card(t)); });
+      root.appendChild(p);
+      if (open) anyShown = true;
+    });
+    if (query && !root.querySelector(".card")) {
+      var e = document.createElement("p"); e.className = "empty"; e.textContent = "Такой работы нет в списке — напишите в ЛС, обсудим."; root.appendChild(e);
+    }
+  }
+  $("q").addEventListener("input", function (e) { query = e.target.value.trim().toLowerCase(); drawGroup(); });
+  drawGroup();
+
+  function cur() { return TYPES.filter(function (t) { return t.id === state.type; })[0]; }
+  function radio(name) { var el = document.querySelector('input[name="' + name + '"]:checked'); return el ? el.value : null; }
+
+  function layout() {
+    var t = cur();
+    var hasVol = !!t.norm || !!t.perPage;
+    $("volBox").hidden = !hasVol;
+    if (hasVol) {
+      var r = $("pages");
+      r.min = t.min; r.max = t.max;
+      if (state.pages < t.min || state.pages > t.max || state.lastType !== t.id) state.pages = t.norm || t.def;
+      r.value = state.pages;
+      $("volHint").textContent = t.perPage ? "Сколько листов переработать. Ставка за лист зависит от нужной оригинальности, минимальный заказ — 500 ₽." : "До " + t.norm + " листов — в базовой цене, каждый лист сверху +" + PER_PAGE + " ₽.";
+    }
+    $("speechBox").hidden = !t.speech && t.id !== "dipl";
+    $("speech").disabled = !t.speech;
+    $("speechToggle").hidden = !t.speech;
+    $("speechHint").hidden = t.id !== "dipl";
+    if (t.id === "dipl") $("speech").checked = false;
+    // нумерация шагов идёт по видимым блокам
+    $("nOrig").textContent = pad(hasVol ? 3 : 2);
+    $("nTerm").textContent = pad(hasVol ? 4 : 3);
+    var sp = !$("speechBox").hidden;
+    $("nSpeech").textContent = pad(hasVol ? 5 : 4);
+    $("nWho").textContent = pad((hasVol ? 5 : 4) + (sp ? 1 : 0));
+    $("infoTitle").innerHTML = "Что входит: " + t.name + "<span>Объём, сроки и требования уточним в личных сообщениях</span>";
+    $("infoList").innerHTML = (DESC[t.id] || []).map(function (x) { return "<li>" + x + "</li>"; }).join("");
+    var labs = t.perPage ? ["50 ₽ за лист", "80 ₽ за лист", "120 ₽ за лист"] : ["без надбавки", "+15%", "+30%"];
+    ["o1", "o2", "o3"].forEach(function (id, i) { document.querySelector('label[for="' + id + '"] span').textContent = labs[i]; });
+    state.lastType = t.id;
+  }
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+
+  function compute() {
+    var t = cur(), lines = [];
+    var sub = t.base;
+    var o = parseFloat(radio("orig")), u = parseFloat(radio("term"));
+    if (t.perPage) {
+      var rate = RATE[String(o)], raw = state.pages * rate;
+      sub = Math.max(MIN_UNIQ, raw);
+      lines.push([t.name + ": " + state.pages + " " + plural(state.pages, "лист", "листа", "листов") + " × " + rate + " ₽", fmt(raw), ""]);
+      if (raw < MIN_UNIQ) lines.push(["Минимальный заказ", fmt(MIN_UNIQ), ""]);
+    } else lines.push([t.name + (t.note ? " (" + t.note + ")" : ""), fmt(t.base), ""]);
+    if (t.norm && state.pages > t.norm) {
+      var extra = (state.pages - t.norm) * PER_PAGE;
+      sub += extra; lines.push(["+" + (state.pages - t.norm) + " " + plural(state.pages - t.norm, "лист", "листа", "листов") + " сверх нормы", "+" + fmt(extra), "plus"]);
+    }
+    if (t.speech && $("speech").checked) { sub += 1500; lines.push(["Текст выступления", "+" + fmt(1500), "plus"]); }
+    var oo = t.perPage ? 0 : o;
+    if (oo > 0) lines.push(["Оригинальность " + (o === 0.15 ? "70–85%" : "от 85%") + " · +" + Math.round(o * 100) + "%", "+" + fmt(Math.round(sub * o)), "plus"]);
+    if (u > 0) lines.push(["Срочно · +30%", "+" + fmt(Math.round(sub * u)), "plus"]);
+    var total = sub + Math.round(sub * oo) + Math.round(sub * u);
+    var who = radio("who");
+    if (who === "first") {
+      var d = Math.round(total * 0.1); total -= d; lines.push(["Первый заказ · −10%", "−" + fmt(d), "minus"]);
+    } else if (state.friends > 0) {
+      var f = Math.min(state.friends * FRIEND, Math.round(total * 0.5));
+      total -= f; lines.push(["Друзья по рекомендации · " + state.friends + " × 650 ₽", "−" + fmt(f), "minus"]);
+    }
+    total = Math.floor(total / 50) * 50;
+    if (t.perPage) total = Math.max(MIN_UNIQ, total);
+    return { total: total, lines: lines, t: t, o: o, u: u, who: who };
+  }
+  function plural(n, a, b, c) { var m10 = n % 10, m100 = n % 100; if (m10 === 1 && m100 !== 11) return a; if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return b; return c; }
+
+  function render() {
+    var r = compute();
+    $("total").innerHTML = "<small>от</small>" + fmt(r.total);
+    $("barTotal").textContent = "от " + fmt(r.total);
+    $("pagesOut").textContent = state.pages;
+    $("lines").innerHTML = r.lines.map(function (l) {
+      return '<li class="' + l[2] + '"><span>' + l[0] + '</span><span>' + l[1] + '</span></li>';
+    }).join("");
+    $("friendsBox").hidden = r.who !== "back";
+    $("fOut").textContent = state.friends;
+    $("copied").textContent = "";
+    $("fallback").hidden = true;
+    return r;
+  }
+
+  function summary() {
+    var r = compute(), t = r.t, parts = [t.name];
+    if (t.norm || t.perPage) parts.push(state.pages + " " + plural(state.pages, "лист", "листа", "листов"));
+    parts.push("оригинальность " + (r.o === 0 ? "до 70%" : r.o === 0.15 ? "70–85%" : "от 85%"));
+    parts.push(r.u > 0 ? "срочно" : "обычный срок");
+    if (t.speech && $("speech").checked) parts.push("+ текст выступления");
+    if (r.who === "first") parts.push("первый заказ");
+    else if (state.friends) parts.push("друзей по рекомендации: " + state.friends);
+    return "Здравствуйте! Посчитал(а) в калькуляторе: " + parts.join(", ") + ". Ориентировочно от " + fmt(r.total) + ".\nТема: \nСрок сдачи: ";
+  }
+
+  document.getElementById("calc").addEventListener("change", function (e) {
+    if (e.target.name === "type") { state.type = e.target.value; layout(); }
+    render();
+  });
+  $("pages").addEventListener("input", function (e) { state.pages = parseInt(e.target.value, 10); render(); });
+  $("fPlus").addEventListener("click", function () { state.friends = Math.min(10, state.friends + 1); render(); });
+  $("fMinus").addEventListener("click", function () { state.friends = Math.max(0, state.friends - 1); render(); });
+  document.getElementById("calc").addEventListener("submit", function (e) { e.preventDefault(); });
+
+  $("copyBtn").addEventListener("click", function () {
+    var txt = summary();
+    function fallback() {
+      var ta = $("fallback"); ta.value = txt; ta.hidden = false; ta.focus(); ta.select();
+      $("copied").textContent = "Выделите текст ниже и скопируйте вручную";
+    }
+    try {
+      navigator.clipboard.writeText(txt).then(function () {
+        $("copied").textContent = "Скопировано — вставьте в сообщение в ВК";
+      }, fallback);
+    } catch (err) { fallback(); }
+  });
+
+  layout(); render();
+})();
+</script>
+
+</body>
+</html>
